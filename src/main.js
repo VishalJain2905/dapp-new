@@ -82,45 +82,29 @@ function initCursorTracking() {
   }
 }
 
-// Robust Preloader Hider
+// Starter Page - Show for 1 second then hide
 window.addEventListener('load', () => {
   setTimeout(() => {
     const loader = document.getElementById('loader');
     if (loader) {
       loader.classList.add('loaded');
-      console.log("🎬 Site Loaded - Transitioning...");
+      console.log("🚀 Welcome to Dapp Studio!");
     }
-  }, 1000); // Wait for animations
+  }, 1000); // Show for exactly 1 second
 });
 
-// Emergency Fallback
+// Emergency Fallback - hide after 2 seconds max
 setTimeout(() => {
   const loader = document.getElementById('loader');
   if (loader && !loader.classList.contains('loaded')) {
     loader.classList.add('loaded');
   }
-}, 5000);
+}, 2000);
 
-// Enhanced Preloader with percentage
+// Starter page initialization (no longer needed but kept for compatibility)
 function initPreloader() {
-  const percentage = document.querySelector('.loader-percentage');
-  if (!percentage) return;
-  
-  let progress = 0;
-  const duration = 2500;
-  const startTime = performance.now();
-  
-  function updateProgress(currentTime) {
-    const elapsed = currentTime - startTime;
-    progress = Math.min(Math.floor((elapsed / duration) * 100), 100);
-    percentage.textContent = `${progress}%`;
-    
-    if (progress < 100) {
-      requestAnimationFrame(updateProgress);
-    }
-  }
-  
-  requestAnimationFrame(updateProgress);
+  // Starter page now uses CSS animations only
+  // No JavaScript animation needed
 }
 
 // Reveal animations on scroll
