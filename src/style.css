@@ -395,7 +395,23 @@ input, textarea, select {
   backface-visibility: hidden;
 }
 
-/* 3D canvas behind video */
+/* GIF background layer (behind 3D) */
+.gif-background,
+#gif-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
+  background-image: url('./video/screenshot.gif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 3D canvas above GIF background */
 #canvas-container.canvas-container,
 #canvas-container {
   position: fixed;
