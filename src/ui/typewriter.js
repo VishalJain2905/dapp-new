@@ -2,8 +2,8 @@
 export function initTypewriter() {
   // Typewriter configuration
   const config = {
-    speed: 50, // milliseconds per character
-    delay: 500, // delay before starting
+    speed: 40, // milliseconds per character
+    delay: 0, // no delay – show text fast
     cursor: true, // show blinking cursor
   };
 
@@ -13,7 +13,7 @@ export function initTypewriter() {
   elements.forEach((element, index) => {
     const text = element.textContent;
     const speed = parseInt(element.getAttribute('data-speed')) || config.speed;
-    const delay = parseInt(element.getAttribute('data-delay')) || config.delay + (index * 200);
+    const delay = parseInt(element.getAttribute('data-delay')) || config.delay;
     const showCursor = element.getAttribute('data-cursor') !== 'false';
     
     // Clear the element
@@ -90,7 +90,7 @@ export function initWordTypewriter() {
   elements.forEach(element => {
     const words = element.textContent.trim().split(' ');
     const speed = parseInt(element.getAttribute('data-speed')) || 150;
-    const delay = parseInt(element.getAttribute('data-delay')) || 500;
+    const delay = parseInt(element.getAttribute('data-delay')) || 0;
     
     element.textContent = '';
     element.style.opacity = '1';

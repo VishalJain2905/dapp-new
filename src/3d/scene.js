@@ -1,34 +1,32 @@
 /**
- * Cinematic 3D Experience - Rolling Wave Background
- * Single wavy texture with scroll-based rolling effect
+ * DappStudio — Full-site 3D Background Scene (Three.js)
+ * Fixed behind all content; scroll and mouse driven. Production-ready.
  */
 
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Import wave texture
 import waveTexture from '../assets/textures/fifth.png';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
 const CONFIG = {
   camera: {
     fov: 50,
     near: 0.1,
-    far: 3000
+    far: 3000,
   },
   quality: {
     pixelRatio: Math.min(window.devicePixelRatio, 2),
-  }
+  },
+  particles: {
+    count: 2500,
+    size: 2.5,
+    speed: 0.0008,
+  },
 };
 
-// ============================================================================
-// GLOBAL STATE
-// ============================================================================
 let scene, camera, renderer, clock;
 let scrollProgress = 0;
 let targetScrollProgress = 0;
@@ -36,26 +34,44 @@ let mouseX = 0, mouseY = 0;
 let targetMouseX = 0, targetMouseY = 0;
 let animationId;
 
-// Scene Objects
 let backgroundMesh;
 let particles;
 
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
+
+function isWebGLSupported() {
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Initialize the full-site 3D background. Call once after DOM ready.
+ * Requires an element with id="canvas-container" in the page.
+ */
 export function initScene() {
   const container = document.getElementById('canvas-container');
-  if (!container) return;
+  if (!container) {
+    console.warn('[3D Scene] No #canvas-container found.');
+    return;
+  }
+
+  if (!isWebGLSupported()) {
+    container.classList.add('canvas-fallback');
+    return;
+  }
 
   initRenderer(container);
   initCamera();
   initSceneObject();
-  
-  // Interaction
   setupScrollCamera();
   setupMouseInteraction();
   setupResizeHandler();
-  
   animate();
 }
 
@@ -63,14 +79,21 @@ function initRenderer(container) {
   renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: false,
-    powerPreference: 'high-performance'
+    powerPreference: 'high-performance',
+    stencil: false,
+    depth: true,
   });
-  
+
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(CONFIG.quality.pixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  
-  container.appendChild(renderer.domElement);
+
+  const canvas = renderer.domElement;
+  canvas.setAttribute('aria-hidden', 'true');
+  canvas.style.display = 'block';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  container.appendChild(canvas);
 }
 
 function initCamera() {
@@ -88,35 +111,66 @@ function initCamera() {
 function initSceneObject() {
   scene = new THREE.Scene();
   clock = new THREE.Clock();
-  
+
   createBackgroundTransition();
   createParticles();
 }
 
 function createParticles() {
-  const count = 1500;
+  const count = CONFIG.particles.count;
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
+  const velocities = new Float32Array(count * 3);
+  
+  // Color palette: cyan, blue, purple, white
+  const colorPalette = [
+    new THREE.Color(0x60efff), // Cyan
+    new THREE.Color(0x0061ff), // Blue
+    new THREE.Color(0x8b5cf6), // Purple
+    new THREE.Color(0xffffff), // White
+    new THREE.Color(0x00d4ff), // Light cyan
+  ];
   
   for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 2000;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 2000;
-    sizes[i] = Math.random() * 2 + 1;
+    // Distribute particles in a sphere-like pattern
+    const radius = 800 + Math.random() * 1200;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    
+    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = radius * Math.cos(phi);
+    
+    // Random velocities for organic movement
+    velocities[i * 3] = (Math.random() - 0.5) * 0.5;
+    velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
+    velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
+    
+    // Random colors from palette
+    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+    
+    // Varied sizes
+    sizes[i] = Math.random() * 3 + 0.5;
   }
   
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  geometry.userData.velocities = velocities;
   
   const material = new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: 2,
+    size: CONFIG.particles.size,
     transparent: true,
-    opacity: 0.3,
+    opacity: 0.6,
     blending: THREE.AdditiveBlending,
     sizeAttenuation: true,
-    depthWrite: false
+    depthWrite: false,
+    vertexColors: true,
   });
   
   particles = new THREE.Points(geometry, material);
@@ -253,13 +307,30 @@ function animate() {
   const elapsed = clock.getElapsedTime();
   updateCamera();
   
+  // Animate particles with organic movement
   if (particles) {
-    particles.rotation.y += 0.001;
-    particles.rotation.x += 0.0005;
-    particles.position.z += 0.5 + targetScrollProgress * 5;
-    if (particles.position.z > 500) particles.position.z = -500;
+    const positions = particles.geometry.attributes.position.array;
+    const velocities = particles.geometry.userData.velocities;
+    
+    for (let i = 0; i < positions.length; i += 3) {
+      // Add sine wave motion
+      positions[i] += Math.sin(elapsed * 0.5 + i) * 0.1;
+      positions[i + 1] += Math.cos(elapsed * 0.3 + i) * 0.1;
+      positions[i + 2] += velocities[i + 2] * (1 + scrollProgress * 2);
+      
+      // Reset particles that go too far
+      if (positions[i + 2] > 1000) positions[i + 2] = -1000;
+    }
+    
+    particles.geometry.attributes.position.needsUpdate = true;
+    particles.rotation.y += CONFIG.particles.speed;
+    particles.rotation.x += CONFIG.particles.speed * 0.5;
+    
+    // Mouse influence on particles
+    particles.rotation.y += mouseX * 0.0002;
+    particles.rotation.x += mouseY * 0.0002;
   }
-  
+
   if (backgroundMesh) {
     backgroundMesh.material.uniforms.uScroll.value = scrollProgress;
     backgroundMesh.material.uniforms.uTime.value = elapsed;

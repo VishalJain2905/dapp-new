@@ -1,10 +1,11 @@
 // Main Application Entry Point
 import "./style.css";
-import { initScene } from "./3d/scene.js";
-import { initAnimations } from "./animations/scroll.js";
+import logoImg from "./assets/dapp.svg";
+import { initScene } from "./3d/gltfBackground.js";
 import { initNavigation } from "./ui/navigation.js";
 import { initForm } from "./ui/form.js";
 import { initProcessAccordion } from "./ui/process.js";
+import { initInteractions, initFormEffects } from "./ui/interactions.js";
 
 import { initTypewriter, initScrollTypewriter, initWordTypewriter } from "./ui/typewriter.js";
 
@@ -12,43 +13,29 @@ import { initTypewriter, initScrollTypewriter, initWordTypewriter } from "./ui/t
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🚀 DappStudio - Initializing...");
 
-  // Initialize 3D Scene
+  // Set logo image in header and footer
+  document.querySelectorAll(".logo-img").forEach((img) => {
+    img.src = logoImg;
+  });
+
   initScene();
-
-  // Initialize scroll animations
-  initAnimations();
-
-  // Initialize navigation
   initNavigation();
 
-  // Initialize contact form
   initForm();
-  
-  // Initialize Process Accordion
   initProcessAccordion();
 
-  // Add smooth scrolling for anchor links
   initSmoothScroll();
-  
-  // Add custom cursor tracking
   initCursorTracking();
-  
-  // Initialize typewriter effects
-  setTimeout(() => {
-    initTypewriter();
-    initScrollTypewriter();
-    initWordTypewriter();
-  }, 500);
-  
-  // Initialize reveal animations
+  initInteractions();
+  initFormEffects();
+  initTypewriter();
+  initScrollTypewriter();
+  initWordTypewriter();
   initRevealAnimations();
-  
-  // Initialize stats counter
+
   initStatsCounter();
-  
-  // Initialize enhanced preloader
-  initPreloader();
-  
+  initScrollProgress();
+
   console.log("✅ Application initialized successfully");
 });
 
@@ -82,48 +69,10 @@ function initCursorTracking() {
   }
 }
 
-// Starter Page - Show for 1 second then hide
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const loader = document.getElementById('loader');
-    if (loader) {
-      loader.classList.add('loaded');
-      console.log("🚀 Welcome to Dapp Studio!");
-    }
-  }, 1000); // Show for exactly 1 second
-});
-
-// Emergency Fallback - hide after 2 seconds max
-setTimeout(() => {
-  const loader = document.getElementById('loader');
-  if (loader && !loader.classList.contains('loaded')) {
-    loader.classList.add('loaded');
-  }
-}, 2000);
-
-// Starter page initialization (no longer needed but kept for compatibility)
-function initPreloader() {
-  // Starter page now uses CSS animations only
-  // No JavaScript animation needed
-}
-
-// Reveal animations on scroll
+// Reveal all sections/cards on load in one go (no scroll-based delay)
 function initRevealAnimations() {
   const revealElements = document.querySelectorAll('[data-reveal]');
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('revealed');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  });
-  
-  revealElements.forEach(el => observer.observe(el));
+  revealElements.forEach((el) => el.classList.add('revealed'));
 }
 
 // Animated stats counter
@@ -147,13 +96,12 @@ function initStatsCounter() {
       hasAnimated = true;
       
       // Animate each counter
-      statNumbers.forEach((stat, index) => {
+      statNumbers.forEach((stat) => {
         const target = parseInt(stat.getAttribute('data-count'));
-        const delay = index * 200;
+        const delay = 0;
         
         setTimeout(() => {
-          // Direct animation without separate function
-          const duration = 2000;
+          const duration = 1200;
           const start = performance.now();
           
           const animate = (now) => {
@@ -180,9 +128,23 @@ function initStatsCounter() {
     }
   }
   
-  // Check on load after a delay
-  setTimeout(checkAndAnimate, 1500);
-  
-  // Check on scroll
+  // Check on load immediately and on scroll
+  checkAndAnimate();
   window.addEventListener('scroll', checkAndAnimate, { passive: true });
+}
+
+// Smooth scroll progress indicator
+function initScrollProgress() {
+  const progressBar = document.getElementById('scroll-progress');
+  if (!progressBar) return;
+  
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    progressBar.style.width = `${progress}%`;
+  }
+  
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
 }
