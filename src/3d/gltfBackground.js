@@ -77,9 +77,10 @@ export function initScene() {
 
   scene = new THREE.Scene();
 
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -93,12 +94,12 @@ export function initScene() {
   const hdrLoader = new HDRLoader();
   hdrLoader.load(HDR_URL, (texture) => {
     texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = texture;
+    scene.background = null;
     scene.environment = texture;
     loadModel();
   }, undefined, () => {
-    console.warn('[3D GLTF Background] HDR failed, using dark background.');
-    scene.background = new THREE.Color(0x0a0f1a);
+    console.warn('[3D GLTF Background] HDR failed.');
+    scene.background = null;
     loadModel();
   });
 

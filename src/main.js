@@ -1,11 +1,12 @@
 // Main Application Entry Point
 import "./style.css";
 import logoImg from "./assets/dapp.svg";
-import { initScene } from "./3d/gltfBackground.js";
 import { initNavigation } from "./ui/navigation.js";
 import { initForm } from "./ui/form.js";
 import { initProcessAccordion } from "./ui/process.js";
 import { initInteractions, initFormEffects } from "./ui/interactions.js";
+import { initAnimations } from "./animations/scroll.js";
+import { initParallaxScroll } from "./animations/parallaxScroll.js";
 
 import { initTypewriter, initScrollTypewriter, initWordTypewriter } from "./ui/typewriter.js";
 
@@ -18,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
     img.src = logoImg;
   });
 
-  initScene();
+  initParallaxScroll();
+
   initNavigation();
 
   initForm();
@@ -28,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCursorTracking();
   initInteractions();
   initFormEffects();
+  initAnimations();
   initTypewriter();
   initScrollTypewriter();
   initWordTypewriter();

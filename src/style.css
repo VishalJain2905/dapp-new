@@ -395,25 +395,8 @@ input, textarea, select {
   backface-visibility: hidden;
 }
 
-/* GIF background layer (behind 3D) */
-.gif-background,
-#gif-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -2;
-  pointer-events: none;
-  background-image: url('./video/screenshot.gif');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-/* 3D canvas above GIF background */
-#canvas-container.canvas-container,
-#canvas-container {
+/* Page background: drawn SVG scene (sky, mountains, road, forest) – no image */
+#parallax-svg-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -421,19 +404,24 @@ input, textarea, select {
   height: 100%;
   z-index: 0;
   pointer-events: none;
-  background-color: transparent;
 }
 
-#canvas-container canvas {
+#parallax-svg-container #parallax-svg {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: 100vh;
+  min-height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
-/* When WebGL is unavailable, container still provides a solid background */
-#canvas-container.canvas-fallback {
-  background: linear-gradient(180deg, #030712 0%, #0f172a 50%, #030712 100%);
+.scrollElement {
+  position: absolute;
+  height: 6000px;
+  width: 100px;
+  top: 0;
+  z-index: 0;
 }
 
 /* Full-site dark blur overlay - one layer for entire website (not per section) */
